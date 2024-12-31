@@ -1976,6 +1976,24 @@ begin
           Result := Double.NegativeInfinity
         else
           Result := StrToFloat(S, goUSFormatSettings);
+      end;
+
+    TgoBsonType.Null:
+      begin
+        AReader.ReadNull;
+        if not aInfo.fHasDefaultValue  then
+          raise EgoBsonSerializerError.Create('Unsupported Double deserialization type')
+        else begin
+          case aInfo.DefaultValue.FRepresentation of
+            TgoBsonRepresentation.Int32,
+            TgoBsonRepresentation.Double:
+              Result:= aInfo.DefaultValue.FAsInt32;
+            TgoBsonRepresentation.Int64:
+              Result:= aInfo.DefaultValue.FAsInt64;
+            else
+              raise EgoBsonSerializerError.Create('Unsupported Double default deserialization value');
+          end;
+        end;
       end
   else
     raise EgoBsonSerializerError.Create('Unsupported Double deserialization type');
@@ -2039,6 +2057,23 @@ begin
 
     TgoBsonType.String:
       Result := StrToInt(AReader.ReadString);
+    TgoBsonType.Null:
+      begin
+        AReader.ReadNull;
+        if not aInfo.fHasDefaultValue  then
+          raise EgoBsonSerializerError.Create('Unsupported Int32 deserialization type')
+        else begin
+          case aInfo.DefaultValue.FRepresentation of
+            TgoBsonRepresentation.Int32:
+              Result:= aInfo.DefaultValue.FAsInt32;
+            TgoBsonRepresentation.Int64:
+              Result:= aInfo.DefaultValue.FAsInt64;
+            else
+              raise EgoBsonSerializerError.Create('Unsupported Int32 default deserialization value');
+          end;
+        end;
+      end
+
   else
     raise EgoBsonSerializerError.Create('Unsupported Int32 deserialization type');
   end;
