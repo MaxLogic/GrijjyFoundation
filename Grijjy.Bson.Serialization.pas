@@ -796,6 +796,10 @@ type
         const AAddress: Pointer; const AWriter: IgoBsonBaseWriter); static;
       class procedure DeserializeDouble(const AVar: TVarInfo;
         const AAddress: Pointer; const AReader: IgoBsonBaseReader); static;
+      class procedure SerializeCurrency(const AVar: TVarInfo;
+        const AAddress: Pointer; const AWriter: IgoBsonBaseWriter); static;
+      class procedure DeserializeCurrency(const AVar: TVarInfo;
+        const AAddress: Pointer; const AReader: IgoBsonBaseReader); static;
       class procedure SerializeChar(const AVar: TVarInfo;
         const AAddress: Pointer; const AWriter: IgoBsonBaseWriter); static;
       class procedure DeserializeChar(const AVar: TVarInfo;
@@ -1089,6 +1093,10 @@ type
       const AValue: Double; const AWriter: IgoBsonBaseWriter); static;
     class function DeserializeDouble(const AInfo: TInfo;
       const AReader: IgoBsonBaseReader): Double; static;
+    class procedure SerializeCurrency(const AInfo: TInfo;
+      const AValue: Currency; const AWriter: IgoBsonBaseWriter); static;
+    class function DeserializeCurrency(const AInfo: TInfo;
+      const AReader: IgoBsonBaseReader): Currency; static;
     class procedure SerializeChar(const AInfo: TInfo;
       const AValue: Char; const AWriter: IgoBsonBaseWriter); static;
     class function DeserializeChar(const AInfo: TInfo;
@@ -1904,6 +1912,12 @@ begin
   end;
 end;
 
+class function TgoBsonSerializer.DeserializeCurrency(const AInfo: TInfo;
+  const AReader: IgoBsonBaseReader): Currency;
+begin
+  Result:= DeserializeDouble(AInfo, AReader);
+end;
+
 class function TgoBsonSerializer.DeserializeDateTime(const AInfo: TInfo;
   const AReader: IgoBsonBaseReader): TDateTime;
 var
@@ -2520,6 +2534,12 @@ begin
   else
     Assert(False);
   end;
+end;
+
+class procedure TgoBsonSerializer.SerializeCurrency(const AInfo: TInfo;
+  const AValue: Currency; const AWriter: IgoBsonBaseWriter);
+begin
+  SerializeDouble(AInfo, AValue, AWriter);
 end;
 
 class procedure TgoBsonSerializer.SerializeDateTime(const AInfo: TInfo;
@@ -3631,6 +3651,13 @@ begin
   PChar(AAddress)^ := TgoBsonSerializer.DeserializeChar(AVar, AReader);
 end;
 
+class procedure TgoBsonSerializer.TVarInfo.DeserializeCurrency(
+  const AVar: TVarInfo; const AAddress: Pointer;
+  const AReader: IgoBsonBaseReader);
+begin
+  PCurrency(AAddress)^ := TgoBsonSerializer.DeserializeCurrency(AVar, AReader);
+end;
+
 class procedure TgoBsonSerializer.TVarInfo.DeserializeDateTime(
   const AVar: TVarInfo; const AAddress: Pointer;
   const AReader: IgoBsonBaseReader);
@@ -3926,9 +3953,13 @@ begin
                         FSerializeProc := SerializeSingle;
                         FDeserializeProc := DeserializeSingle;
                       end;
-            ftDouble, ftCurr: begin
+            ftDouble: begin
                         FSerializeProc := SerializeDouble;
                         FDeserializeProc := DeserializeDouble;
+                      end;
+            ftCurr: begin
+                        FSerializeProc := SerializeCurrency;
+                        FDeserializeProc := DeserializeCurrency;
                       end;
           end;
           if (FRepresentation = TgoBsonRepresentation.Default) then
@@ -4158,6 +4189,13 @@ class procedure TgoBsonSerializer.TVarInfo.SerializeChar(
   const AWriter: IgoBsonBaseWriter);
 begin
   TgoBsonSerializer.SerializeChar(AVar, PChar(AAddress)^, AWriter);
+end;
+
+class procedure TgoBsonSerializer.TVarInfo.SerializeCurrency(
+  const AVar: TVarInfo; const AAddress: Pointer;
+  const AWriter: IgoBsonBaseWriter);
+begin
+  TgoBsonSerializer.SerializeDouble(AVar, PCurrency(AAddress)^, AWriter);
 end;
 
 class procedure TgoBsonSerializer.TVarInfo.SerializeDateTime(
