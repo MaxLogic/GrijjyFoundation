@@ -3926,7 +3926,7 @@ begin
                         FSerializeProc := SerializeSingle;
                         FDeserializeProc := DeserializeSingle;
                       end;
-            ftDouble: begin
+            ftDouble, ftCurr: begin
                         FSerializeProc := SerializeDouble;
                         FDeserializeProc := DeserializeDouble;
                       end;
